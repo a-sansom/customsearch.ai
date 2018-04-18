@@ -58,7 +58,7 @@ class CustomsearchAi:
         username_element.send_keys(self.username + Keys.RETURN)
 
         # Once the displayName banner is shown, we're on the next (part of the) form.
-        banner = WebDriverWait(self.driver, 3).until(
+        banner = WebDriverWait(self.driver, 5).until(
             EC.presence_of_element_located((By.XPATH, "//div[@id = 'displayName']"))
         )
 
