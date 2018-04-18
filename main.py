@@ -363,7 +363,7 @@ class CustomsearchAi:
                 subpages_element = self.driver.find_element_by_xpath("//button[@id = 'siteOrUrlSelectionDropdown']")
                 subpages_element.click()
 
-                subpages_no_element = self.driver.find_element_by_xpath("//button[text() = 'No'")
+                subpages_no_element = self.driver.find_element_by_xpath("//button[text() = 'No']")
                 subpages_no_element.click()
 
         # Add the website.
