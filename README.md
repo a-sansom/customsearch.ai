@@ -64,9 +64,9 @@ To backup search instances:
 A file named in the format `customsearch.ai.XXXXXXXX_YYYYYY_ZZZZZZ.json` will be created in the same directory as
 `main.py`.
 
-To restore them:
+To restore them in/with a different account:
 
-    python main.py <user.name>@example.org <password> --restore_file customsearch.ai.XXXXXXXX_YYYYYY_ZZZZZZ.json
+    python main.py <other.user.name>@example.org <password> --restore_file customsearch.ai.XXXXXXXX_YYYYYY_ZZZZZZ.json
 
 ### Backup(/export) scenario
 
