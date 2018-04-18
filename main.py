@@ -101,6 +101,8 @@ class CustomsearchAi:
         """Create a list of all the search instances, from HTML."""
         row_elements = []
 
+        # @todo Deal with more than one page of instances? Page size is 20. Pagination markup used is the same as the
+        # Active/Blocked/Pinned tabs/pages.
         try:
             # Wait until the HTML table of data is available.
             row_elements = WebDriverWait(self.driver, 3).until(
