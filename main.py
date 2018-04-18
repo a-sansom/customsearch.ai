@@ -249,6 +249,7 @@ class CustomsearchAi:
 
     def read_instance_configuration_file(self):
         """Read instance configuration from file."""
+
         filename = self.instance_configuration_file
 
         try:
@@ -260,12 +261,146 @@ class CustomsearchAi:
 
     def restore(self):
         """Restore search instance(s) from file to customsearch.ai."""
-        self.read_instance_configuration_file()
-        # Order of backed up configuration is important. Use the values 'page_number' and 'page_index' to restore items
-        # in the same order that they were in the search instance that was backed up originally.
-        print('Restore of search instance(s) from "{0}" not yet implemented'.format(self.instance_configuration_file))
-        print(self.search_instances)
 
+        self.read_instance_configuration_file()
+
+        for search_instance in self.search_instances:
+            print('Restoring search instance "{0}"'.format(search_instance['name']))
+
+            self.create_instance(search_instance)
+            self.restore_active_list(search_instance['active'])
+            self.restore_blocked_list(search_instance['blocked'])
+            self.restore_pinned_list(search_instance['pinned'])
+
+            # Click 'My Instances' link (to return to instance 'index', ready to restore next set of instance data).
+            self.wait_modal_disappear()
+
+            my_instances_element = self.driver.find_element_by_link_text('My Instances')
+            my_instances_element.click()
+
+        print('Restore done!')
+
+    def create_instance(self, search_instance):
+        """Create a new Custom Search instance, based on import data."""
+
+        # TODO: Handle duplicate named instance(s). Will cause immediate failure.
+        try:
+            button_element = WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.XPATH, "//button[text() = 'New Instance']"))
+            )
+
+            button_element.click()
+
+        except TimeoutException:
+            print('Timed out waiting for "New Instance" button to become available')
+            self.driver.quit()
+
+        # Enter name of instance being restored. Prefix name with '(I)', to show it's from a restore.
+        # TODO: Value is limited to a maximum of 50 chars. Ensure value length is <= this.
+        input_element = self.driver.find_element_by_xpath("//input[@id = 'newInstanceNameInput']")
+        input_element.send_keys('(I) {0}'.format(search_instance['name']) + Keys.RETURN)
+
+        # Wait for modal to fade out, before continuing.
+        self.wait_modal_disappear()
+
+    def wait_modal_disappear(self):
+        """Delay progress until modal window fades."""
+
+        try:
+            modal = WebDriverWait(self.driver, 5).until(
+                EC.invisibility_of_element_located((By.XPATH, "//bs-modal-container"))
+            )
+
+        except TimeoutException:
+            print('Timed out waiting for "bs-modal-container" to disappear')
+            self.driver.quit()
+
+    def wait_website_list(self):
+        """Delay progress until website list shown."""
+
+        try:
+            list = WebDriverWait(self.driver, 5).until(
+                EC.presence_of_all_elements_located((By.XPATH, "//tr[@class = 'site-row']"))
+            )
+
+        except TimeoutException:
+            print('Timed out waiting for "Active" table to become available (after adding website)')
+            self.driver.quit()
+
+    def restore_active_list(self, active_items):
+        """Restore the 'Active' list from backup data."""
+
+        for index, item in enumerate(active_items):
+            self.add_active_website(item)
+            self.amend_website_ranking(item)
+
+    def add_active_website(self, item):
+        """Add a website to the 'Active' list."""
+
+        # Enter the URL.
+        try:
+            website_element = WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located((By.XPATH, "//input[@formcontrolname = 'website']"))
+            )
+
+            website_element.send_keys(item['website'])
+
+        except TimeoutException:
+            print('Timed out waiting for "Active" tab form to become available')
+            self.driver.quit()
+
+        # The subpages control defaults to 'true', so only needs changing if current item is subpages 'false'.
+        if not item['subpages']:
+            # Different UI/behaviour for first, then any subsequent entries, for this value.
+            if index == 0:
+                # Uncheck a checkbox.
+                subpages_element = self.driver.find_element_by_xpath(
+                    "//input[@type = 'checkbox' and following-sibling::span[contains(text(), 'Include Subpages')]]")
+                subpages_element.click()
+
+            else:
+                # Select option from drop down.
+                subpages_element = self.driver.find_element_by_xpath("//button[@id = 'siteOrUrlSelectionDropdown']")
+                subpages_element.click()
+
+                subpages_no_element = self.driver.find_element_by_xpath("//button[text() = 'No'")
+                subpages_no_element.click()
+
+        # Add the website.
+        add_element = self.driver.find_element_by_xpath("//button[@title = 'Add Website']")
+        add_element.click()
+
+        # Wait for the website list to be shown before continuing.
+        self.wait_website_list()
+
+    def amend_website_ranking(self, item):
+        """Amend website ranking, if needed."""
+
+        # Use the 'page_index' as basis to find the correct row up/down elements.
+        xpath_index = item['page_index'] + 1
+
+        if item['rank']['demoted']:
+            down_element = self.driver.find_element_by_xpath("//tr[@class = 'site-row'][{0}]//button[@name = 'Decrease']".format(xpath_index))
+            down_element.click()
+
+        elif item['rank']['boosted'] or item['rank']['super_boosted']:
+            up_element = self.driver.find_element_by_xpath("//tr[@class = 'site-row'][{0}]//button[@name = 'Increase']".format(xpath_index))
+            up_element.click()
+
+            if item['rank']['super_boosted']:
+                up_element.click()
+
+    def restore_blocked_list(self, blocked_items):
+        """Restore the 'Blocked' list from backup data."""
+
+        for index, item in enumerate(blocked_items):
+            pass
+
+    def restore_pinned_list(self, pinned_items):
+        """Restore the 'Pinned' list from backup data."""
+
+        for index, item in enumerate(pinned_items):
+            pass
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Backup/restore of customsearch.ai instance configuration(s)')
