@@ -331,10 +331,10 @@ class CustomsearchAi:
         """Restore the 'Active' list from backup data."""
 
         for index, item in enumerate(active_items):
-            self.add_active_website(item)
+            self.add_website(item)
             self.amend_website_ranking(item)
 
-    def add_active_website(self, item):
+    def add_website(self, item):
         """Add a website to the 'Active' list."""
 
         # Enter the URL.
