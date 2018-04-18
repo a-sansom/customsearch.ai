@@ -352,7 +352,7 @@ class CustomsearchAi:
         # The subpages control defaults to 'true', so only needs changing if current item is subpages 'false'.
         if not item['subpages']:
             # Different UI/behaviour for first, then any subsequent entries, for this value.
-            if index == 0:
+            if item['page_number'] == 0 and item['page_index'] == 0:
                 # Uncheck a checkbox.
                 subpages_element = self.driver.find_element_by_xpath(
                     "//input[@type = 'checkbox' and following-sibling::span[contains(text(), 'Include Subpages')]]")
