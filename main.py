@@ -74,7 +74,7 @@ class CustomsearchAi:
 
     def backup(self):
         """Backup search instance(s) configuration to file."""
-        self.create_instance_list()
+        self.create_instance_list(self.search_instances)
 
         # Iterate the list of instances (we can go to each instance URL directly).
         for search_instance in self.search_instances:
@@ -97,12 +97,10 @@ class CustomsearchAi:
 
         self.write_instance_configuration_file()
 
-    def create_instance_list(self):
+    def create_instance_list(self, search_instances=[], page_number=0):
         """Create a list of all the search instances, from HTML."""
         row_elements = []
 
-        # @todo Deal with more than one page of instances? Page size is 20. Pagination markup used is the same as the
-        # Active/Blocked/Pinned tabs/pages.
         try:
             # Wait until the HTML table of data is available.
             row_elements = WebDriverWait(self.driver, 3).until(
@@ -117,7 +115,8 @@ class CustomsearchAi:
             created_element = row.find_element_by_xpath(".//td[2]")
 
             data = {
-                'index': index,
+                'page_number': page_number,
+                'page_index': index,
                 'name': link_element.text,
                 'created': created_element.text,
                 'url': link_element.get_attribute('href'),
@@ -126,7 +125,11 @@ class CustomsearchAi:
                 'pinned': [],
             }
 
-            self.search_instances.append(data)
+            search_instances.append(data)
+
+        # Navigate through any pagination, to get all data.
+        if self.pagination_available() and self.pagination_next():
+            self.create_active_list(search_instances, page_number + 1)
 
     def create_active_list(self, search_instance, page_number=0):
         """Create a list of all the 'Active' instance configuration."""
@@ -153,7 +156,6 @@ class CustomsearchAi:
 
             search_instance['active'].append(data)
 
-        # Navigate through any pagination, to get all data.
         if self.pagination_available() and self.pagination_next():
             self.create_active_list(search_instance, page_number + 1)
 
