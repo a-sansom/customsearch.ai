@@ -1,0 +1,9 @@
+.Python
+.idea
+bin
+include
+lib
+selenium
+geckodriver.log
+pip-selfcheck.json 
+*.json
