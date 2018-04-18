@@ -55,6 +55,19 @@ In the above commands:
 - the `python` command will use the virtualenv's version of python, until you run deactivate
 - `python` version used during development, 3.6
 
+### Usage
+
+To backup search instances:
+
+    python main.py <user.name>@example.org <password>
+
+A file named in the format `customsearch.ai.XXXXXXXX_YYYYYY_ZZZZZZ.json` will be created in the same directory as
+`main.py`.
+
+To restore them:
+
+    python main.py <user.name>@example.org <password> --restore_file customsearch.ai.XXXXXXXX_YYYYYY_ZZZZZZ.json
+
 ### Backup(/export) scenario
 
 The general outline of what needs to be done to backup the search instance config is as follows (always starting as an
