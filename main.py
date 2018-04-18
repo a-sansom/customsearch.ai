@@ -393,8 +393,12 @@ class CustomsearchAi:
     def restore_blocked_list(self, blocked_items):
         """Restore the 'Blocked' list from backup data."""
 
+        # TODO: Refactor to a 'select a named tab' function. Same is done in backup functionality too.
+        blocked_element = self.driver.find_element_by_link_text('Blocked')
+        blocked_element.click()
+
         for index, item in enumerate(blocked_items):
-            pass
+            self.add_website(item)
 
     def restore_pinned_list(self, pinned_items):
         """Restore the 'Pinned' list from backup data."""
