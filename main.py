@@ -187,7 +187,8 @@ class CustomsearchAi:
     def pagination_next(self):
         """Find, and click, any non-disabled pagination 'Next' link."""
         try:
-            next_page_element = self.driver.find_element_by_xpath("//a[@aria-label = 'Next page' and not(contains(@class, ' disable'))]")
+            next_page_element = self.driver.find_element_by_xpath(
+                "//a[@aria-label = 'Next page' and not(contains(@class, ' disable'))]")
             next_page_element.click()
 
             return True
@@ -406,11 +407,13 @@ class CustomsearchAi:
         xpath_index = item['page_index'] + 1
 
         if item['rank']['demoted']:
-            down_element = self.driver.find_element_by_xpath("//tr[@class = 'site-row'][{0}]//button[@name = 'Decrease']".format(xpath_index))
+            down_element = self.driver.find_element_by_xpath(
+                "//tr[@class = 'site-row'][{0}]//button[@name = 'Decrease']".format(xpath_index))
             down_element.click()
 
         elif item['rank']['boosted'] or item['rank']['super_boosted']:
-            up_element = self.driver.find_element_by_xpath("//tr[@class = 'site-row'][{0}]//button[@name = 'Increase']".format(xpath_index))
+            up_element = self.driver.find_element_by_xpath(
+                "//tr[@class = 'site-row'][{0}]//button[@name = 'Increase']".format(xpath_index))
             up_element.click()
 
             if item['rank']['super_boosted']:
