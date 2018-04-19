@@ -86,13 +86,11 @@ class CustomsearchAi:
             self.create_active_list(search_instance)
 
             # Navigate to and get the 'Blocked' data.
-            blocked_element = self.driver.find_element_by_link_text('Blocked')
-            blocked_element.click()
+            self.click_navigation_tab('Blocked')
             self.create_blocked_list(search_instance)
 
             # Navigate to and get the 'Pinned' data.
-            pinned_element = self.driver.find_element_by_link_text('Pinned')
-            pinned_element.click()
+            self.click_navigation_tab('Pinned')
             self.create_pinned_list(search_instance)
 
         self.write_instance_configuration_file()
@@ -195,6 +193,12 @@ class CustomsearchAi:
 
         except NoSuchElementException:
             return False
+
+    def click_navigation_tab(self, tab_text):
+        """Find and click a navigation 'tab' with given text."""
+
+        tab_element = self.driver.find_element_by_link_text(tab_text)
+        tab_element.click()
 
     def create_blocked_list(self, search_instance, page_number=0):
         """Create a list of all the 'Blocked' instance configuration."""
@@ -422,9 +426,7 @@ class CustomsearchAi:
     def restore_blocked_list(self, blocked_items):
         """Restore the 'Blocked' list from backup data."""
 
-        # TODO: Refactor to a 'select a named tab' function. Same is done in backup functionality too.
-        blocked_element = self.driver.find_element_by_link_text('Blocked')
-        blocked_element.click()
+        self.click_navigation_tab('Blocked')
 
         for index, item in enumerate(blocked_items):
             self.add_website(item)
@@ -432,8 +434,7 @@ class CustomsearchAi:
     def restore_pinned_list(self, pinned_items):
         """Restore the 'Pinned' list from backup data."""
 
-        pinned_element = self.driver.find_element_by_link_text('Pinned')
-        pinned_element.click()
+        self.click_navigation_tab('Pinned')
 
         for index, item in enumerate(pinned_items):
             self.add_pinned_website(item)
