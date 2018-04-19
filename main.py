@@ -346,7 +346,7 @@ class CustomsearchAi:
             website_element.send_keys(item['website'])
 
         except TimeoutException:
-            print('Timed out waiting for "Active" tab form to become available')
+            print('Timed out waiting for website list/form to become available')
             self.driver.quit()
 
         # The subpages control defaults to 'true', so only needs changing if current item is subpages 'false'.
