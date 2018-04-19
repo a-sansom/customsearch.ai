@@ -5,7 +5,14 @@ Currently there is no way to export/import any configured Bing Custom Search ins
 
 These scripts attempt to achieve that, by using Selenium Webdriver to crawl the search instance configuration pages, and
 export the data to file. The exported data is then able to be used to recreate the configuration elsewhere (eg. under a
-development account).
+development account), by automating the steps a user would take when creating configuration, using the backed up data.
+
+See the `Usage` section below for details of how to use the script.
+
+Other approaches to achieve the same outcome might include:
+
+- Figure out and use API calls the Angular app executes, reformatting/storing/using the returned JSON data
+- Other headless browser options
 
 ## Choices
 
@@ -13,11 +20,10 @@ The reason to use Selenium Webdriver is because the `customsearch.ai` pages are 
 technologies exist, but the ability to crawl over pages with large amounts of script makes them a more complicated
 option.
 
-To use Webdriver, in this case with Firefox/Chrome, you need to have the browser installed, and also have the relevant
+To use Webdriver, in this case with Firefox, you need to have the browser installed, and also have the relevant
 'driver' binary downloaded/available.
 
     https://github.com/mozilla/geckodriver
-    https://sites.google.com/a/chromium.org/chromedriver/
 
 The path to the relevant 'driver' is required to be known in the python script(s). You can either place the binaries on
 the somewhere already in `$PATH`, or pass a path when calling the webdriver.
@@ -81,7 +87,7 @@ anonymous, logged out, user):
 
 ### Restore(/import) from backup scenario
 
-Currently when restoring, we will not overwrite any existing configuration with the same name. If an instance already
+When restoring, we will not overwrite any existing configuration with the same name. If an instance already
 exists with the same name as is being restored, the restored instance will be renamed.
 
 The general outline of what needs to be done to restore from a previously backed up file is as follows:
@@ -92,6 +98,9 @@ The general outline of what needs to be done to restore from a previously backed
     Iterate through the instance configuration(s) in the file, and for each one...
     Rename the instance being resstored, if one already exists with the same name
     Iterate through the 'Active, 'Blocked' and 'Pinned' data in the file, recreating instance configuration
+
+Restored instances names will be prefixed with `(I)` to indicate they were inported. Eg. `My instance` will be named
+`(I)My instance` after restore.
 
 ### Known issues/limitations
 
@@ -105,10 +114,11 @@ that field is not editable.
 - Only the ability to restore all instances in a file exists. You can restore all, then manually remove those not
 required.
 
+- Only tested with Webdriver Firefox (59). Other versions should work, as *should* Chrome with Chromedriver
+
 ### Documentation links
 
     https://virtualenv.pypa.io/en/stable/
     https://docs.seleniumhq.org
     http://selenium-python.readthedocs.io
     https://github.com/mozilla/geckodriver
-    https://sites.google.com/a/chromium.org/chromedriver/
