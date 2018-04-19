@@ -27,7 +27,7 @@ class CustomsearchAi:
         self.driver = webdriver.Firefox(firefox_options=options)
         self.username = username
         self.password = password
-        self.search_instances = []
+        self.current_search_instances = []
         self.instance_configuration_file = ''
 
     def administer_instances(self, action=ACTION_BACKUP, file=''):
@@ -74,10 +74,10 @@ class CustomsearchAi:
 
     def backup(self):
         """Backup search instance(s) configuration to file."""
-        self.create_instance_list(self.search_instances)
+        self.create_instance_list(self.current_search_instances)
 
         # Iterate the list of instances (we can go to each instance URL directly).
-        for search_instance in self.search_instances:
+        for search_instance in self.current_search_instances:
             print('Backing up search instance "{0}"'.format(search_instance['name']))
 
             # Navigate direct to instance details page.
@@ -250,7 +250,7 @@ class CustomsearchAi:
         print('Writing data to "{0}"'.format(filename))
 
         with open(filename, 'w') as destination:
-            json.dump(self.search_instances, destination, ensure_ascii=False)
+            json.dump(self.current_search_instances, destination, ensure_ascii=False)
 
     def read_instance_configuration_file(self):
         """Read instance configuration from file."""
@@ -259,7 +259,7 @@ class CustomsearchAi:
 
         try:
             with open(filename) as origin:
-                self.search_instances = json.load(origin)
+                self.current_search_instances = json.load(origin)
 
         except FileNotFoundError:
             print('File "{0}" not found'.format(filename))
@@ -269,7 +269,7 @@ class CustomsearchAi:
 
         self.read_instance_configuration_file()
 
-        for search_instance in self.search_instances:
+        for search_instance in self.current_search_instances:
             print('Restoring search instance "{0}"'.format(search_instance['name']))
 
             self.create_instance(search_instance)
