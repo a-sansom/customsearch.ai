@@ -51,7 +51,6 @@ These scripts were developed in a virtualenv (when using `Fish` shell):
     source bin/activate.fish
     pip install selenium
     pip install ...
-    ... python commands ...
     python main.py <user.name>@example.org <password> [--restore_file customsearch.ai.XXXXXXXX_YYYYYY_ZZZZZZ.json]
     deactivate
 
@@ -60,6 +59,7 @@ In the above commands:
 - the `source` command will differ depending on your shell. The example above is for use with the `Fish` shell
 - the `python` command will use the virtualenv's version of python, until you run deactivate
 - `python` version used during development, 3.6
+- selenium version is 3.11.0
 
 ### Usage
 
@@ -88,7 +88,7 @@ anonymous, logged out, user):
 ### Restore(/import) from backup scenario
 
 When restoring, we will not overwrite any existing configuration with the same name. If an instance already
-exists with the same name as is being restored, the restored instance will be renamed.
+exists with the same name as is being restored, the instance being restored will be skipped.
 
 The general outline of what needs to be done to restore from a previously backed up file is as follows:
 
@@ -96,7 +96,7 @@ The general outline of what needs to be done to restore from a previously backed
     Sign in
     Load the specified exported file
     Iterate through the instance configuration(s) in the file, and for each one...
-    Rename the instance being resstored, if one already exists with the same name
+    If there's already an instance restored with the same name, skip restoring it
     Iterate through the 'Active, 'Blocked' and 'Pinned' data in the file, recreating instance configuration
 
 Restored instances names will be prefixed with `(I)` to indicate they were inported. Eg. `My instance` will be named
