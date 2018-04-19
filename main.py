@@ -373,6 +373,32 @@ class CustomsearchAi:
         # Wait for the website list to be shown before continuing.
         self.wait_website_list()
 
+    def add_pinned_website(self, item):
+        """Add a website to the 'Pinned' list."""
+
+        # Enter the URL.
+        try:
+            website_element = WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located((By.XPATH, "//input[@formcontrolname = 'website']"))
+            )
+
+            website_element.send_keys(item['website'])
+
+        except TimeoutException:
+            print('Timed out waiting for "Pinned" tab form to become available')
+            self.driver.quit()
+
+        # Enter the query value.
+        query_element = self.driver.find_element_by_xpath("//input[@formcontrolname = 'query']")
+        query_element.send_keys(item['query'])
+
+        # Add the website.
+        add_element = self.driver.find_element_by_xpath("//button[@title = 'Add Pin']")
+        add_element.click()
+
+        # Wait for the website list to be shown before continuing.
+        self.wait_website_list()
+
     def amend_website_ranking(self, item):
         """Amend website ranking, if needed."""
 
@@ -403,8 +429,12 @@ class CustomsearchAi:
     def restore_pinned_list(self, pinned_items):
         """Restore the 'Pinned' list from backup data."""
 
+        pinned_element = self.driver.find_element_by_link_text('Pinned')
+        pinned_element.click()
+
         for index, item in enumerate(pinned_items):
-            pass
+            self.add_pinned_website(item)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Backup/restore of customsearch.ai instance configuration(s)')
