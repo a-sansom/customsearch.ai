@@ -28,6 +28,7 @@ class CustomsearchAi:
         self.username = username
         self.password = password
         self.current_search_instances = []
+        self.inbound_search_instances = []
         self.instance_configuration_file = ''
 
     def administer_instances(self, action=ACTION_BACKUP, file=''):
@@ -104,6 +105,7 @@ class CustomsearchAi:
             row_elements = WebDriverWait(self.driver, 3).until(
                 EC.presence_of_all_elements_located((By.XPATH, "//tr[td/a/@class = 'instance-name']"))
             )
+
         except TimeoutException:
             print('Timed out waiting for list of search instances')
 
@@ -259,7 +261,7 @@ class CustomsearchAi:
 
         try:
             with open(filename) as origin:
-                self.current_search_instances = json.load(origin)
+                self.inbound_search_instances = json.load(origin)
 
         except FileNotFoundError:
             print('File "{0}" not found'.format(filename))
@@ -268,27 +270,52 @@ class CustomsearchAi:
         """Restore search instance(s) from file to customsearch.ai."""
 
         self.read_instance_configuration_file()
+        # Get list of existing instances. We can then reference it for duplication checks etc.
+        self.create_instance_list(self.current_search_instances)
 
-        for search_instance in self.current_search_instances:
-            print('Restoring search instance "{0}"'.format(search_instance['name']))
+        for search_instance in self.inbound_search_instances:
+            current_instance_name = search_instance['name']
+            restored_instance_name = self.new_instance_name(search_instance['name'])
 
-            self.create_instance(search_instance)
-            self.restore_active_list(search_instance['active'])
-            self.restore_blocked_list(search_instance['blocked'])
-            self.restore_pinned_list(search_instance['pinned'])
+            if self.instance_exists(search_instance['name']):
+                print('Skipping restore of instance "{0}". "{1}" already exists'.format(current_instance_name, restored_instance_name))
 
-            # Click 'My Instances' link (to return to instance 'index', ready to restore next set of instance data).
-            self.wait_modal_disappear()
+            else:
+                print('Restoring search instance "{0}" as "{1}"'.format(current_instance_name, restored_instance_name))
 
-            my_instances_element = self.driver.find_element_by_link_text('My Instances')
-            my_instances_element.click()
+                self.create_instance(search_instance)
+                self.restore_active_list(search_instance['active'])
+                self.restore_blocked_list(search_instance['blocked'])
+                self.restore_pinned_list(search_instance['pinned'])
+
+                # Click 'My Instances' link (to return to instance 'index', ready to restore next set of instance data).
+                self.wait_modal_disappear()
+
+                my_instances_element = self.driver.find_element_by_link_text('My Instances')
+                my_instances_element.click()
 
         print('Restore done!')
+
+    def instance_exists(self, name):
+        """Determine if there's already an instance with the given name."""
+        new_instance_name = self.new_instance_name(name)
+
+        for item in self.current_search_instances:
+            if item['name'] == new_instance_name:
+                return True
+
+        return False
+
+    def new_instance_name(self, name):
+        """Format a new instance's name. This will be instances being restored from a backup."""
+
+        # Prefix with '(I)' to indicate it's an imported instance.
+        # Limit on name length is 50 characters, hence we limit it to this.
+        return '(I){0}'.format(name)[:50]
 
     def create_instance(self, search_instance):
         """Create a new Custom Search instance, based on import data."""
 
-        # TODO: Handle duplicate named instance(s). Will cause immediate failure.
         try:
             button_element = WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.XPATH, "//button[text() = 'New Instance']"))
@@ -300,10 +327,8 @@ class CustomsearchAi:
             print('Timed out waiting for "New Instance" button to become available')
             self.driver.quit()
 
-        # Enter name of instance being restored. Prefix name with '(I)', to show it's from a restore.
-        # TODO: Value is limited to a maximum of 50 chars. Ensure value length is <= this.
         input_element = self.driver.find_element_by_xpath("//input[@id = 'newInstanceNameInput']")
-        input_element.send_keys('(I) {0}'.format(search_instance['name']) + Keys.RETURN)
+        input_element.send_keys(self.new_instance_name(search_instance['name']) + Keys.RETURN)
 
         # Wait for modal to fade out, before continuing.
         self.wait_modal_disappear()
